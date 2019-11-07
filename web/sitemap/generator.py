@@ -40,7 +40,6 @@ class Generator:
             return None
 
         print (url)
-        self.parsed_urls.append(url)
 
         tree = lxml.html.fromstring(html)
         elements = tree.cssselect('a')
@@ -54,10 +53,20 @@ class Generator:
 
             if link.find(self.host) >= 0 or link[0] == '/' or link[0] == '?':
                 if not link in self.parsed_urls:
-                    self.parse(link)
+                    self.parsed_urls.append(url)
 
     def generate(self):
-        self.parse(self.host)
+        self.parsed_urls.append(self.host)
+
+        start = 0
+        while True:
+            end = len(self.parsed_urls)
+            if start == end:
+                break
+
+            for i in range(start, end):
+                self.parse(self.parsed_urls[i])
+            start = end
 
         now = datetime.datetime.now(tz).isoformat()
 
@@ -72,7 +81,8 @@ class Generator:
             t
         )
 
-        with open('sitemap.xml', 'w') as f:
+        filename = 'sitemap.xml'
+        with open(name, 'w') as f:
             f.write(text)
 
 if __name__ == '__main__':
